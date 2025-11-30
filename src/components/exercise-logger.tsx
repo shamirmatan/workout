@@ -26,11 +26,13 @@ export function ExerciseLogger({
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [sets, setSets] = useState<CompletedSet[]>(() =>
-    initialSets || Array.from({ length: plannedSets }, () => ({
-      reps: parseInt(plannedReps) || 0,
-      weight: plannedWeight || 0,
-      completed: false,
-    }))
+    initialSets && initialSets.length > 0
+      ? initialSets
+      : Array.from({ length: plannedSets }, () => ({
+          reps: parseInt(plannedReps) || 0,
+          weight: plannedWeight || 0,
+          completed: false,
+        }))
   );
 
   const completedCount = sets.filter(s => s.completed).length;
