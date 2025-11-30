@@ -22,7 +22,7 @@ export function WorkoutCard({
   return (
     <Link href={`/workouts/${weekNumber}/${dayLabel}`}>
       <Card className={`p-4 transition-all hover:shadow-md ${
-        isCurrentDay ? 'ring-2 ring-primary' : ''
+        isCurrentDay ? 'border-2 border-primary' : ''
       } ${isCompleted ? 'bg-accent/10' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

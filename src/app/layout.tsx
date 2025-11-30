@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} antialiased`}>
-        <main className="min-h-screen pb-16">
+        <main className="min-h-screen pb-16 safe-area-pt">
           {children}
         </main>
         <BottomNav />
