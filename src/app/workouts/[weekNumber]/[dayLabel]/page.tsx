@@ -7,7 +7,7 @@ import { ExerciseLogger } from '@/components/exercise-logger';
 import { PhaseBadge } from '@/components/phase-badge';
 import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
-import { getConfig, getCompletedWorkout, saveWorkout, deleteWorkout } from '@/app/actions';
+import { getConfig, getCompletedWorkout, saveWorkout, deleteWorkout, getLastUsedWeights } from '@/app/actions';
 import { getPhaseForWeek, getTemplate } from '@/lib/program-data';
 import { getSetsRepsForWeek, parseSetsReps, getExerciseWeight } from '@/lib/weight-calculator';
 import type { Config, CompletedSet, ExerciseLog, TemplateExercise } from '@/types';
@@ -27,6 +27,7 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
 
   const [config, setConfig] = useState<Config | null>(null);
   const [exerciseLogs, setExerciseLogs] = useState<Record<string, CompletedSet[]>>({});
+  const [lastUsedWeights, setLastUsedWeights] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [hasSavedData, setHasSavedData] = useState(false);
@@ -38,10 +39,13 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
   // Load config and existing workout data on mount
   useEffect(() => {
     async function loadData() {
-      const [configData, existingWorkout] = await Promise.all([
+      const [configData, existingWorkout, lastWeights] = await Promise.all([
         getConfig(),
-        getCompletedWorkout(weekNumber, dayLabel)
+        getCompletedWorkout(weekNumber, dayLabel),
+        getLastUsedWeights()
       ]);
+
+      setLastUsedWeights(lastWeights);
 
       const configTyped: Config = {
         id: configData.id ?? 'default',
@@ -172,7 +176,9 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
         {template.exercises.map((exercise: TemplateExercise) => {
           const setsReps = getSetsRepsForWeek(exercise, weekNumber);
           const { sets, reps } = parseSetsReps(setsReps);
-          const weight = getExerciseWeight(exercise, weekNumber, config);
+          const calculatedWeight = getExerciseWeight(exercise, weekNumber, config);
+          // For exercises without mainLift, use last used weight as fallback
+          const weight = calculatedWeight ?? lastUsedWeights[exercise.id] ?? null;
 
           return (
             <ExerciseLogger

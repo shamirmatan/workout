@@ -180,6 +180,33 @@ export async function getCompletedWorkouts() {
   return db.select().from(completedWorkouts);
 }
 
+// Get last used weights for exercises (for pre-filling accessory exercises)
+export async function getLastUsedWeights(): Promise<Record<string, number>> {
+  const allWorkouts = await db.select().from(completedWorkouts);
+
+  // Sort by week number descending to get most recent first
+  allWorkouts.sort((a, b) => b.weekNumber - a.weekNumber);
+
+  const lastWeights: Record<string, number> = {};
+
+  for (const workout of allWorkouts) {
+    const logs: ExerciseLog[] = JSON.parse(workout.exerciseLogsJson);
+
+    for (const log of logs) {
+      // Only set if we haven't already found a more recent weight for this exercise
+      if (lastWeights[log.exerciseId] === undefined) {
+        // Find the max weight used in completed sets
+        const completedSets = log.sets.filter(s => s.completed && s.weight > 0);
+        if (completedSets.length > 0) {
+          lastWeights[log.exerciseId] = Math.max(...completedSets.map(s => s.weight));
+        }
+      }
+    }
+  }
+
+  return lastWeights;
+}
+
 // Get specific completed workout
 export async function getCompletedWorkout(weekNumber: number, dayLabel: string) {
   const id = `week-${weekNumber}-day-${dayLabel}`;
