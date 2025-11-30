@@ -12,6 +12,12 @@ export const config = sqliteTable('config', {
   weeklyIncrement: real('weekly_increment').notNull().default(2.5),
   deloadPercentage: real('deload_percentage').notNull().default(0.6),
   currentWeek: integer('current_week').notNull().default(1),
+  // Weight adjustments: track difference between prescribed and actual lifted weights
+  squatAdjustment: real('squat_adjustment').notNull().default(0),
+  benchAdjustment: real('bench_adjustment').notNull().default(0),
+  deadliftAdjustment: real('deadlift_adjustment').notNull().default(0),
+  rdlAdjustment: real('rdl_adjustment').notNull().default(0),
+  ohpAdjustment: real('ohp_adjustment').notNull().default(0),
 });
 
 // Workout templates (seeded from program data, editable)

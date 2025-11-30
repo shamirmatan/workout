@@ -9,6 +9,14 @@ const LIFT_TO_CONFIG_KEY: Record<MainLift, keyof Config> = {
   ohp: 'startingOhp',
 };
 
+export const LIFT_TO_ADJUSTMENT_KEY: Record<MainLift, keyof Config> = {
+  squat: 'squatAdjustment',
+  bench: 'benchAdjustment',
+  deadlift: 'deadliftAdjustment',
+  rdl: 'rdlAdjustment',
+  ohp: 'ohpAdjustment',
+};
+
 export function calculateWeight(
   mainLift: MainLift,
   weekNumber: number,
@@ -16,6 +24,7 @@ export function calculateWeight(
   percentageOfMain: number = 1
 ): number {
   const startWeight = config[LIFT_TO_CONFIG_KEY[mainLift]] as number;
+  const adjustment = (config[LIFT_TO_ADJUSTMENT_KEY[mainLift]] as number) || 0;
   const { weeklyIncrement, deloadPercentage } = config;
 
   // Count progression weeks (excluding deloads before this week)
@@ -26,8 +35,8 @@ export function calculateWeight(
     }
   }
 
-  // Base weight with linear progression
-  let weight = startWeight + progressionWeeks * weeklyIncrement;
+  // Base weight with linear progression + any adjustment from actual lifts
+  let weight = startWeight + progressionWeeks * weeklyIncrement + adjustment;
 
   // Apply deload if this is a deload week
   if (DELOAD_WEEKS.includes(weekNumber as typeof DELOAD_WEEKS[number])) {
@@ -38,6 +47,34 @@ export function calculateWeight(
   weight = weight * percentageOfMain;
 
   // Round to nearest 2.5kg
+  return Math.round(weight / 2.5) * 2.5;
+}
+
+// Calculate weight WITHOUT adjustment (for comparing prescribed vs actual)
+export function calculatePrescribedWeight(
+  mainLift: MainLift,
+  weekNumber: number,
+  config: Config,
+  percentageOfMain: number = 1
+): number {
+  const startWeight = config[LIFT_TO_CONFIG_KEY[mainLift]] as number;
+  const { weeklyIncrement, deloadPercentage } = config;
+
+  let progressionWeeks = weekNumber - 1;
+  for (const deloadWeek of DELOAD_WEEKS) {
+    if (deloadWeek < weekNumber) {
+      progressionWeeks--;
+    }
+  }
+
+  let weight = startWeight + progressionWeeks * weeklyIncrement;
+
+  if (DELOAD_WEEKS.includes(weekNumber as typeof DELOAD_WEEKS[number])) {
+    weight = weight * deloadPercentage;
+  }
+
+  weight = weight * percentageOfMain;
+
   return Math.round(weight / 2.5) * 2.5;
 }
 

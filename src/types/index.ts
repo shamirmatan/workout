@@ -49,4 +49,10 @@ export interface Config {
   weeklyIncrement: number;
   deloadPercentage: number;
   currentWeek: number;
+  // Weight adjustments from actual lifts
+  squatAdjustment: number;
+  benchAdjustment: number;
+  deadliftAdjustment: number;
+  rdlAdjustment: number;
+  ohpAdjustment: number;
 }
