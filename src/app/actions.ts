@@ -127,8 +127,8 @@ async function updateWeightAdjustments(
   const adjustmentUpdates: Partial<Record<MainLift, number>> = {};
 
   for (const exercise of exercises) {
-    // Only process exercises with a mainLift and percentageOfMain = 1 (main compound lifts)
-    if (!exercise.mainLift || (exercise.percentageOfMain && exercise.percentageOfMain !== 1)) {
+    // Only process exercises with a mainLift
+    if (!exercise.mainLift) {
       continue;
     }
 
@@ -142,19 +142,27 @@ async function updateWeightAdjustments(
 
     const maxLiftedWeight = Math.max(...completedSets.map(s => s.weight));
 
-    // Calculate what was prescribed (includes current adjustment)
+    // Get the percentage modifier (defaults to 1 for main lifts)
+    const percentage = exercise.percentageOfMain ?? 1;
+
+    // Calculate what was prescribed at THIS percentage (includes current adjustment)
     const prescribedWeight = calculateWeight(
       exercise.mainLift,
       weekNumber,
       configTyped,
-      1
+      percentage
     );
 
     // If they lifted different weight, calculate new adjustment
-    const difference = maxLiftedWeight - prescribedWeight;
-    if (Math.abs(difference) >= 2.5) { // Only adjust if difference is at least 2.5kg
+    // Scale the difference back to 100% equivalent
+    const differenceAtPercentage = maxLiftedWeight - prescribedWeight;
+    const differenceAt100 = differenceAtPercentage / percentage;
+
+    if (Math.abs(differenceAt100) >= 2.5) { // Only adjust if 100% difference is at least 2.5kg
       const currentAdjustment = configTyped[LIFT_TO_ADJUSTMENT_KEY[exercise.mainLift]] as number;
-      adjustmentUpdates[exercise.mainLift] = currentAdjustment + difference;
+      // Round to nearest 2.5kg for cleaner numbers
+      const newAdjustment = Math.round((currentAdjustment + differenceAt100) / 2.5) * 2.5;
+      adjustmentUpdates[exercise.mainLift] = newAdjustment;
     }
   }
 
