@@ -74,74 +74,72 @@ export function ExerciseLogger({
 
       {/* Expandable sets */}
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-3">
+        <div className="px-2 pb-4 space-y-2">
           {sets.map((set, i) => (
             <div
               key={i}
-              className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-1 p-2 rounded-lg transition-colors ${
                 set.completed ? 'bg-accent/20' : 'bg-muted/50'
               }`}
             >
-              <span className="w-8 text-sm text-muted-foreground font-medium">#{i + 1}</span>
-
               {/* Weight controls */}
-              <div className="flex items-center">
+              <div className="flex items-center flex-1 min-w-0">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-8 w-8 shrink-0"
                   onClick={() => adjustWeight(i, -2.5)}
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-3 w-3" />
                 </Button>
-                <div className="w-20 text-center">
+                <div className="flex-1 min-w-0 text-center">
                   <Input
                     type="number"
                     step="2.5"
                     value={set.weight}
                     onChange={(e) => updateSet(i, { weight: parseFloat(e.target.value) || 0 })}
-                    className="h-10 text-center font-medium"
+                    className="h-8 text-center font-medium text-sm px-1"
                   />
                   <span className="text-xs text-muted-foreground">kg</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-8 w-8 shrink-0"
                   onClick={() => adjustWeight(i, 2.5)}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
 
-              <span className="text-muted-foreground">×</span>
+              <span className="text-muted-foreground text-sm">×</span>
 
               {/* Reps controls */}
-              <div className="flex items-center">
+              <div className="flex items-center w-24 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-8 w-8 shrink-0"
                   onClick={() => adjustReps(i, -1)}
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-3 w-3" />
                 </Button>
-                <div className="w-14 text-center">
+                <div className="flex-1 text-center">
                   <Input
                     type="number"
                     value={set.reps}
                     onChange={(e) => updateSet(i, { reps: parseInt(e.target.value) || 0 })}
-                    className="h-10 text-center font-medium"
+                    className="h-8 text-center font-medium text-sm px-1"
                   />
                   <span className="text-xs text-muted-foreground">reps</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10"
+                  className="h-8 w-8 shrink-0"
                   onClick={() => adjustReps(i, 1)}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
 
@@ -149,10 +147,10 @@ export function ExerciseLogger({
               <Button
                 variant={set.completed ? 'default' : 'outline'}
                 size="icon"
-                className="h-10 w-10 ml-auto"
+                className="h-9 w-9 shrink-0"
                 onClick={() => updateSet(i, { completed: !set.completed })}
               >
-                <Check className="h-5 w-5" />
+                <Check className="h-4 w-4" />
               </Button>
             </div>
           ))}
