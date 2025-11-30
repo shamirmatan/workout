@@ -65,7 +65,7 @@ export function ExerciseLogger({
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`text-sm font-medium ${completedCount === plannedSets ? 'text-green-600' : ''}`}>
+          <span className={`text-sm font-medium ${completedCount === plannedSets ? 'text-accent' : ''}`}>
             {completedCount}/{plannedSets}
           </span>
           {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -79,7 +79,7 @@ export function ExerciseLogger({
             <div
               key={i}
               className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                set.completed ? 'bg-green-50 dark:bg-green-950' : 'bg-muted/50'
+                set.completed ? 'bg-accent/20' : 'bg-muted/50'
               }`}
             >
               <span className="w-8 text-sm text-muted-foreground font-medium">#{i + 1}</span>

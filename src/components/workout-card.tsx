@@ -23,11 +23,11 @@ export function WorkoutCard({
     <Link href={`/workouts/${weekNumber}/${dayLabel}`}>
       <Card className={`p-4 transition-all hover:shadow-md ${
         isCurrentDay ? 'ring-2 ring-primary' : ''
-      } ${isCompleted ? 'bg-green-50 dark:bg-green-950/30' : ''}`}>
+      } ${isCompleted ? 'bg-accent/10' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {isCompleted ? (
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
+              <CheckCircle2 className="h-6 w-6 text-accent" />
             ) : (
               <div className="h-6 w-6 rounded-full border-2 border-muted-foreground/30" />
             )}

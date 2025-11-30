@@ -18,10 +18,10 @@ import {
 } from 'recharts';
 
 const LIFT_COLORS: Record<MainLift, string> = {
-  squat: '#3b82f6',
-  bench: '#ef4444',
-  deadlift: '#22c55e',
-  ohp: '#8b5cf6',
+  squat: '#a855f7',    // neon purple
+  bench: '#f472b6',    // neon pink
+  deadlift: '#22d3ee', // neon cyan
+  ohp: '#4ade80',      // neon green
 };
 
 const LIFT_LABELS: Record<MainLift, string> = {
