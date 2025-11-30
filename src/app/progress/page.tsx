@@ -21,7 +21,6 @@ const LIFT_COLORS: Record<MainLift, string> = {
   squat: '#3b82f6',
   bench: '#ef4444',
   deadlift: '#22c55e',
-  rdl: '#f59e0b',
   ohp: '#8b5cf6',
 };
 
@@ -29,7 +28,6 @@ const LIFT_LABELS: Record<MainLift, string> = {
   squat: 'Squat',
   bench: 'Bench',
   deadlift: 'Deadlift',
-  rdl: 'RDL',
   ohp: 'OHP',
 };
 
@@ -51,7 +49,6 @@ export default function ProgressPage() {
         startingSquat: configData.startingSquat,
         startingBench: configData.startingBench,
         startingDeadlift: configData.startingDeadlift,
-        startingRdl: configData.startingRdl,
         startingOhp: configData.startingOhp,
         weeklyIncrement: configData.weeklyIncrement,
         deloadPercentage: configData.deloadPercentage,
@@ -59,7 +56,6 @@ export default function ProgressPage() {
         squatAdjustment: configData.squatAdjustment ?? 0,
         benchAdjustment: configData.benchAdjustment ?? 0,
         deadliftAdjustment: configData.deadliftAdjustment ?? 0,
-        rdlAdjustment: configData.rdlAdjustment ?? 0,
         ohpAdjustment: configData.ohpAdjustment ?? 0,
       };
 

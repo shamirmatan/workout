@@ -7,7 +7,6 @@ export const config = sqliteTable('config', {
   startingSquat: real('starting_squat').notNull().default(52.5),
   startingBench: real('starting_bench').notNull().default(37.5),
   startingDeadlift: real('starting_deadlift').notNull().default(55),
-  startingRdl: real('starting_rdl').notNull().default(42.5),
   startingOhp: real('starting_ohp').notNull().default(27.5),
   weeklyIncrement: real('weekly_increment').notNull().default(2.5),
   deloadPercentage: real('deload_percentage').notNull().default(0.6),
@@ -16,7 +15,6 @@ export const config = sqliteTable('config', {
   squatAdjustment: real('squat_adjustment').notNull().default(0),
   benchAdjustment: real('bench_adjustment').notNull().default(0),
   deadliftAdjustment: real('deadlift_adjustment').notNull().default(0),
-  rdlAdjustment: real('rdl_adjustment').notNull().default(0),
   ohpAdjustment: real('ohp_adjustment').notNull().default(0),
 });
 

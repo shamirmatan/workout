@@ -111,7 +111,6 @@ async function updateWeightAdjustments(
     startingSquat: configData.startingSquat,
     startingBench: configData.startingBench,
     startingDeadlift: configData.startingDeadlift,
-    startingRdl: configData.startingRdl,
     startingOhp: configData.startingOhp,
     weeklyIncrement: configData.weeklyIncrement,
     deloadPercentage: configData.deloadPercentage,
@@ -119,7 +118,6 @@ async function updateWeightAdjustments(
     squatAdjustment: configData.squatAdjustment ?? 0,
     benchAdjustment: configData.benchAdjustment ?? 0,
     deadliftAdjustment: configData.deadliftAdjustment ?? 0,
-    rdlAdjustment: configData.rdlAdjustment ?? 0,
     ohpAdjustment: configData.ohpAdjustment ?? 0,
   };
 

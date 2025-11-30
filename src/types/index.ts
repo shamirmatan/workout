@@ -1,4 +1,4 @@
-export type MainLift = 'squat' | 'bench' | 'deadlift' | 'rdl' | 'ohp';
+export type MainLift = 'squat' | 'bench' | 'deadlift' | 'ohp';
 
 export interface TemplateExercise {
   id: string;
@@ -44,7 +44,6 @@ export interface Config {
   startingSquat: number;
   startingBench: number;
   startingDeadlift: number;
-  startingRdl: number;
   startingOhp: number;
   weeklyIncrement: number;
   deloadPercentage: number;
@@ -53,6 +52,5 @@ export interface Config {
   squatAdjustment: number;
   benchAdjustment: number;
   deadliftAdjustment: number;
-  rdlAdjustment: number;
   ohpAdjustment: number;
 }

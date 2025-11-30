@@ -42,13 +42,14 @@ export const PHASE1_TEMPLATES: WorkoutTemplate[] = [
         id: 'rdl',
         name: 'Romanian Deadlift',
         setsReps: '3x12',
-        mainLift: 'rdl',
+        mainLift: 'deadlift',
+        percentageOfMain: 0.75,
         weekVariations: [
           { weekRange: [1, 4], setsReps: '3x12' },
           { weekRange: [5, 8], setsReps: '3x8' },
         ]
       },
-      { id: 'shoulder-press', name: 'Shoulder Press', setsReps: '3x10', mainLift: 'ohp' },
+      { id: 'shoulder-press', name: 'Overhead Press', setsReps: '3x10', mainLift: 'ohp' },
       { id: 'planks', name: 'Planks', setsReps: '3x45-60sec' },
     ],
   },
@@ -129,7 +130,7 @@ export const PHASE2_TEMPLATES: WorkoutTemplate[] = [
     exercises: [
       { id: 'back-squat', name: 'Back Squat', setsReps: '5x5', mainLift: 'squat' },
       { id: 'front-squat', name: 'Front Squat', setsReps: '3x8', mainLift: 'squat', percentageOfMain: 0.65 },
-      { id: 'rdl', name: 'Romanian Deadlift', setsReps: '3x10', mainLift: 'rdl' },
+      { id: 'rdl', name: 'Romanian Deadlift', setsReps: '3x10', mainLift: 'deadlift', percentageOfMain: 0.75 },
       { id: 'leg-press', name: 'Leg Press/Lunges', setsReps: '3x12' },
     ],
   },
@@ -166,7 +167,7 @@ export const PHASE2_TEMPLATES: WorkoutTemplate[] = [
       { id: 'pause-squats', name: 'Pause Squats', setsReps: '3x5', mainLift: 'squat', percentageOfMain: 0.70 },
       { id: 'close-grip-bench', name: 'Close-Grip Bench', setsReps: '4x8', mainLift: 'bench', percentageOfMain: 0.75 },
       { id: 'bulgarian-split', name: 'Bulgarian Split Squats', setsReps: '3x10 each' },
-      { id: 'shoulder-press', name: 'Shoulder Press', setsReps: '3x10', mainLift: 'ohp' },
+      { id: 'shoulder-press', name: 'Overhead Press', setsReps: '3x10', mainLift: 'ohp' },
     ],
   },
 ];
@@ -180,7 +181,7 @@ export const PHASE3_TEMPLATES: WorkoutTemplate[] = [
     exercises: [
       { id: 'back-squat', name: 'Back Squat', setsReps: '3x3', mainLift: 'squat' },
       { id: 'front-squat', name: 'Front Squat', setsReps: '3x5', mainLift: 'squat', percentageOfMain: 0.60 },
-      { id: 'rdl', name: 'RDL', setsReps: '3x8', mainLift: 'rdl' },
+      { id: 'rdl', name: 'Romanian Deadlift', setsReps: '3x8', mainLift: 'deadlift', percentageOfMain: 0.75 },
     ],
   },
   {

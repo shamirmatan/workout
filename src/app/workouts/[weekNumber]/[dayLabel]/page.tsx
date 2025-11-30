@@ -49,7 +49,6 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
         startingSquat: configData.startingSquat,
         startingBench: configData.startingBench,
         startingDeadlift: configData.startingDeadlift,
-        startingRdl: configData.startingRdl,
         startingOhp: configData.startingOhp,
         weeklyIncrement: configData.weeklyIncrement,
         deloadPercentage: configData.deloadPercentage,
@@ -57,7 +56,6 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
         squatAdjustment: configData.squatAdjustment ?? 0,
         benchAdjustment: configData.benchAdjustment ?? 0,
         deadliftAdjustment: configData.deadliftAdjustment ?? 0,
-        rdlAdjustment: configData.rdlAdjustment ?? 0,
         ohpAdjustment: configData.ohpAdjustment ?? 0,
       };
       setConfig(configTyped);

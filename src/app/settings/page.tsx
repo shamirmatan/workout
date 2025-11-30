@@ -15,7 +15,6 @@ export default function SettingsPage() {
     startingSquat: 52.5,
     startingBench: 37.5,
     startingDeadlift: 55,
-    startingRdl: 42.5,
     startingOhp: 27.5,
     weeklyIncrement: 2.5,
     deloadPercentage: 0.6,
@@ -34,7 +33,6 @@ export default function SettingsPage() {
         startingSquat: data.startingSquat,
         startingBench: data.startingBench,
         startingDeadlift: data.startingDeadlift,
-        startingRdl: data.startingRdl,
         startingOhp: data.startingOhp,
         weeklyIncrement: data.weeklyIncrement,
         deloadPercentage: data.deloadPercentage,
@@ -50,7 +48,6 @@ export default function SettingsPage() {
       startingSquat: configState.startingSquat,
       startingBench: configState.startingBench,
       startingDeadlift: configState.startingDeadlift,
-      startingRdl: configState.startingRdl,
       startingOhp: configState.startingOhp,
       weeklyIncrement: configState.weeklyIncrement,
       deloadPercentage: configState.deloadPercentage,
@@ -157,7 +154,6 @@ export default function SettingsPage() {
             { key: 'startingSquat', label: 'Squat' },
             { key: 'startingBench', label: 'Bench Press' },
             { key: 'startingDeadlift', label: 'Deadlift' },
-            { key: 'startingRdl', label: 'Romanian Deadlift' },
             { key: 'startingOhp', label: 'Overhead Press' },
           ].map(({ key, label }) => (
             <div key={key}>

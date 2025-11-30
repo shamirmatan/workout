@@ -5,7 +5,6 @@ const LIFT_TO_CONFIG_KEY: Record<MainLift, keyof Config> = {
   squat: 'startingSquat',
   bench: 'startingBench',
   deadlift: 'startingDeadlift',
-  rdl: 'startingRdl',
   ohp: 'startingOhp',
 };
 
@@ -13,7 +12,6 @@ export const LIFT_TO_ADJUSTMENT_KEY: Record<MainLift, keyof Config> = {
   squat: 'squatAdjustment',
   bench: 'benchAdjustment',
   deadlift: 'deadliftAdjustment',
-  rdl: 'rdlAdjustment',
   ohp: 'ohpAdjustment',
 };
 
@@ -86,7 +84,6 @@ export function getAllWeightsForWeek(
     squat: calculateWeight('squat', weekNumber, config),
     bench: calculateWeight('bench', weekNumber, config),
     deadlift: calculateWeight('deadlift', weekNumber, config),
-    rdl: calculateWeight('rdl', weekNumber, config),
     ohp: calculateWeight('ohp', weekNumber, config),
   };
 }
