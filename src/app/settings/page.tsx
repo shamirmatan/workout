@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { getConfig, updateConfig } from '../actions';
+import { getConfig, updateConfig, setCurrentWeek } from '../actions';
+import { formatDate } from '@/lib/week-calculator';
 
 export default function SettingsPage() {
   const [configState, setConfigState] = useState({
     currentWeek: 1,
+    programStartDate: null as string | null,
     startingSquat: 52.5,
     startingBench: 37.5,
     startingDeadlift: 55,
@@ -18,7 +20,9 @@ export default function SettingsPage() {
     weeklyIncrement: 2.5,
     deloadPercentage: 0.6,
   });
+  const [newWeek, setNewWeek] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSettingWeek, setIsSettingWeek] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load config on mount
@@ -26,6 +30,7 @@ export default function SettingsPage() {
     getConfig().then(data => {
       setConfigState({
         currentWeek: data.currentWeek,
+        programStartDate: data.programStartDate,
         startingSquat: data.startingSquat,
         startingBench: data.startingBench,
         startingDeadlift: data.startingDeadlift,
@@ -34,14 +39,50 @@ export default function SettingsPage() {
         weeklyIncrement: data.weeklyIncrement,
         deloadPercentage: data.deloadPercentage,
       });
+      setNewWeek(data.currentWeek);
       setIsLoading(false);
     });
   }, []);
 
-  const handleSave = async () => {
+  const handleSaveWeights = async () => {
     setIsSaving(true);
-    await updateConfig(configState);
+    await updateConfig({
+      startingSquat: configState.startingSquat,
+      startingBench: configState.startingBench,
+      startingDeadlift: configState.startingDeadlift,
+      startingRdl: configState.startingRdl,
+      startingOhp: configState.startingOhp,
+      weeklyIncrement: configState.weeklyIncrement,
+      deloadPercentage: configState.deloadPercentage,
+    });
     setIsSaving(false);
+  };
+
+  const handleSetWeek = async () => {
+    setIsSettingWeek(true);
+    await setCurrentWeek(newWeek);
+    // Reload config to get updated values
+    const data = await getConfig();
+    setConfigState(prev => ({
+      ...prev,
+      currentWeek: data.currentWeek,
+      programStartDate: data.programStartDate,
+    }));
+    setIsSettingWeek(false);
+  };
+
+  // Calculate next Sunday
+  const getNextSunday = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilSunday = dayOfWeek === 0 ? 7 : 7 - dayOfWeek;
+    const nextSunday = new Date(today);
+    nextSunday.setDate(today.getDate() + daysUntilSunday);
+    return nextSunday.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (isLoading) {
@@ -59,16 +100,53 @@ export default function SettingsPage() {
 
       {/* Current Week */}
       <Card className="p-4 mb-4">
-        <Label htmlFor="currentWeek">Current Week</Label>
-        <Input
-          id="currentWeek"
-          type="number"
-          min={1}
-          max={26}
-          value={configState.currentWeek}
-          onChange={(e) => setConfigState({ ...configState, currentWeek: parseInt(e.target.value) || 1 })}
-          className="mt-2"
-        />
+        <h2 className="font-semibold mb-3">Program Progress</h2>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Current Week</span>
+            <span className="text-xl font-bold">{configState.currentWeek} of 26</span>
+          </div>
+          {configState.programStartDate && (
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Program Started</span>
+              <span>{formatDate(configState.programStartDate)}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Next week starts</span>
+            <span>{getNextSunday()}</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Weeks automatically advance every Sunday.
+          </p>
+        </div>
+
+        <hr className="my-4" />
+
+        <div className="space-y-3">
+          <Label htmlFor="setWeek">Set Current Week</Label>
+          <div className="flex gap-2">
+            <Input
+              id="setWeek"
+              type="number"
+              min={1}
+              max={26}
+              value={newWeek}
+              onChange={(e) => setNewWeek(parseInt(e.target.value) || 1)}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleSetWeek}
+              disabled={isSettingWeek || newWeek === configState.currentWeek}
+              variant="outline"
+            >
+              {isSettingWeek ? 'Setting...' : 'Set'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This will adjust the program start date so the current week matches your selection.
+          </p>
+        </div>
       </Card>
 
       {/* Starting Weights */}
@@ -88,7 +166,7 @@ export default function SettingsPage() {
                 id={key}
                 type="number"
                 step={2.5}
-                value={configState[key as keyof typeof configState]}
+                value={configState[key as keyof typeof configState] as number}
                 onChange={(e) => setConfigState({ ...configState, [key]: parseFloat(e.target.value) || 0 })}
                 className="mt-1"
               />
@@ -131,7 +209,7 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Button onClick={handleSave} disabled={isSaving} className="w-full">
+      <Button onClick={handleSaveWeights} disabled={isSaving} className="w-full">
         {isSaving ? 'Saving...' : 'Save Settings'}
       </Button>
     </div>

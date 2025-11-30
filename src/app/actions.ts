@@ -4,9 +4,10 @@ import { db } from '@/lib/db';
 import { config, completedWorkouts, workoutTemplates } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { calculateCurrentWeek, getProgramStartDateForWeek } from '@/lib/week-calculator';
 import type { ExerciseLog } from '@/types';
 
-// Get app configuration
+// Get app configuration with calculated current week
 export async function getConfig() {
   const results = await db.select().from(config);
   if (results.length === 0) {
@@ -14,7 +15,16 @@ export async function getConfig() {
     await db.insert(config).values({ id: 'default' });
     return (await db.select().from(config))[0];
   }
-  return results[0];
+
+  const configData = results[0];
+
+  // Calculate current week dynamically based on program start date
+  const calculatedWeek = calculateCurrentWeek(configData.programStartDate);
+
+  return {
+    ...configData,
+    currentWeek: calculatedWeek,
+  };
 }
 
 // Update configuration
@@ -22,6 +32,21 @@ export async function updateConfig(updates: Partial<typeof config.$inferInsert>)
   await db.update(config).set(updates).where(eq(config.id, 'default'));
   revalidatePath('/');
   revalidatePath('/settings');
+  revalidatePath('/workouts');
+  revalidatePath('/progress');
+}
+
+// Set the program to a specific week (calculates and sets the start date)
+export async function setCurrentWeek(weekNumber: number) {
+  const startDate = getProgramStartDateForWeek(weekNumber);
+  await db.update(config)
+    .set({ programStartDate: startDate })
+    .where(eq(config.id, 'default'));
+
+  revalidatePath('/');
+  revalidatePath('/settings');
+  revalidatePath('/workouts');
+  revalidatePath('/progress');
 }
 
 // Save completed workout
@@ -88,7 +113,7 @@ export async function getTemplates() {
 export async function seedDatabase() {
   const { ALL_TEMPLATES } = await import('@/lib/program-data');
 
-  // Insert default config
+  // Insert default config if none exists
   await db.insert(config).values({ id: 'default' }).onConflictDoNothing();
 
   // Insert all templates
