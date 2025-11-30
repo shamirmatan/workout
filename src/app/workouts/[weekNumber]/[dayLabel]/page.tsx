@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ExerciseLogger } from '@/components/exercise-logger';
 import { PhaseBadge } from '@/components/phase-badge';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
-import { getConfig, getCompletedWorkout, saveWorkout } from '@/app/actions';
+import { getConfig, getCompletedWorkout, saveWorkout, deleteWorkout } from '@/app/actions';
 import { getPhaseForWeek, getTemplate } from '@/lib/program-data';
 import { getSetsRepsForWeek, parseSetsReps, getExerciseWeight } from '@/lib/weight-calculator';
 import type { Config, CompletedSet, ExerciseLog, TemplateExercise } from '@/types';
@@ -28,6 +28,8 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
   const [config, setConfig] = useState<Config | null>(null);
   const [exerciseLogs, setExerciseLogs] = useState<Record<string, CompletedSet[]>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [hasSavedData, setHasSavedData] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const phase = getPhaseForWeek(weekNumber);
@@ -63,6 +65,7 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
           logsMap[log.exerciseId] = log.sets;
         });
         setExerciseLogs(logsMap);
+        setHasSavedData(true);
       }
 
       setIsLoading(false);
@@ -97,7 +100,20 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
     });
 
     setIsSaving(false);
+    setHasSavedData(true);
     router.push('/');
+  };
+
+  const handleReset = async () => {
+    if (!confirm('Are you sure you want to reset this workout? All saved data will be deleted.')) {
+      return;
+    }
+
+    setIsResetting(true);
+    await deleteWorkout(weekNumber, dayLabel);
+    setExerciseLogs({});
+    setHasSavedData(false);
+    setIsResetting(false);
   };
 
   if (isLoading || !config || !template) {
@@ -126,7 +142,7 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-bold">Week {weekNumber} - Day {dayLabel}</h1>
           <p className="text-sm text-muted-foreground">{template.name}</p>
           <PhaseBadge
@@ -135,6 +151,17 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
             weekNumber={weekNumber}
           />
         </div>
+        {hasSavedData && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleReset}
+            disabled={isResetting}
+            title="Reset workout"
+          >
+            <RotateCcw className={`h-5 w-5 ${isResetting ? 'animate-spin' : ''}`} />
+          </Button>
+        )}
       </div>
 
       {/* Exercise list */}

@@ -95,6 +95,16 @@ export async function getCompletedWorkout(weekNumber: number, dayLabel: string) 
   return results[0] || null;
 }
 
+// Delete a completed workout (reset)
+export async function deleteWorkout(weekNumber: number, dayLabel: string) {
+  const id = `week-${weekNumber}-day-${dayLabel}`;
+  await db.delete(completedWorkouts).where(eq(completedWorkouts.id, id));
+
+  revalidatePath('/');
+  revalidatePath('/workouts');
+  revalidatePath(`/workouts/${weekNumber}/${dayLabel}`);
+}
+
 // Update workout template
 export async function updateTemplate(id: string, exercisesJson: string) {
   await db.update(workoutTemplates)
