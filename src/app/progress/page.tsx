@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { getConfig, getCompletedWorkouts } from '../actions';
+import { getConfig, getCompletedWorkouts, getPersonalRecords } from '../actions';
 import { getAllWeightsForWeek } from '@/lib/weight-calculator';
 import { PHASES } from '@/lib/program-data';
 import type { Config, MainLift } from '@/types';
+import { Trophy } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -34,13 +35,15 @@ const LIFT_LABELS: Record<MainLift, string> = {
 export default function ProgressPage() {
   const [config, setConfig] = useState<Config | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
+  const [personalRecords, setPersonalRecords] = useState<Record<string, { weight: number; exerciseName: string }>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
-      const [configData, completedWorkouts] = await Promise.all([
+      const [configData, completedWorkouts, records] = await Promise.all([
         getConfig(),
-        getCompletedWorkouts()
+        getCompletedWorkouts(),
+        getPersonalRecords()
       ]);
 
       const configTyped: Config = {
@@ -61,6 +64,7 @@ export default function ProgressPage() {
 
       setConfig(configTyped);
       setCompletedCount(completedWorkouts.length);
+      setPersonalRecords(records);
       setIsLoading(false);
     }
     loadData();
@@ -117,25 +121,28 @@ export default function ProgressPage() {
         </div>
       </Card>
 
-      {/* Current week stats */}
+      {/* Personal Records */}
       <Card className="p-4 mb-6">
-        <h2 className="font-semibold mb-3">Week {config.currentWeek} Working Weights</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {(Object.keys(LIFT_LABELS) as MainLift[]).map(lift => {
-            const weight = getAllWeightsForWeek(config.currentWeek, config)[lift];
-            return (
-              <div key={lift} className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: LIFT_COLORS[lift] }}
-                />
-                <span className="text-sm">
-                  {LIFT_LABELS[lift]}: <span className="font-medium">{weight}kg</span>
-                </span>
-              </div>
-            );
-          })}
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy className="h-5 w-5 text-accent" />
+          <h2 className="font-semibold">Personal Records</h2>
         </div>
+        {Object.keys(personalRecords).length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Complete workouts to see your personal records here.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {Object.values(personalRecords)
+              .sort((a, b) => b.weight - a.weight)
+              .map(record => (
+                <div key={record.exerciseName} className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">{record.exerciseName}</span>
+                  <span className="font-medium">{record.weight}kg</span>
+                </div>
+              ))}
+          </div>
+        )}
       </Card>
 
       {/* Weight progression chart */}

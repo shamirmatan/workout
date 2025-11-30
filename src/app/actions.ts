@@ -180,6 +180,35 @@ export async function getCompletedWorkouts() {
   return db.select().from(completedWorkouts);
 }
 
+// Get personal records (max weight for each exercise)
+export async function getPersonalRecords(): Promise<Record<string, { weight: number; exerciseName: string }>> {
+  const allWorkouts = await db.select().from(completedWorkouts);
+
+  const records: Record<string, { weight: number; exerciseName: string }> = {};
+
+  for (const workout of allWorkouts) {
+    const logs: ExerciseLog[] = JSON.parse(workout.exerciseLogsJson);
+
+    for (const log of logs) {
+      // Find max weight across all completed sets
+      const completedSets = log.sets.filter(s => s.completed && s.weight > 0);
+      if (completedSets.length === 0) continue;
+
+      const maxWeight = Math.max(...completedSets.map(s => s.weight));
+
+      // Update record if this is higher
+      if (!records[log.exerciseName] || maxWeight > records[log.exerciseName].weight) {
+        records[log.exerciseName] = {
+          weight: maxWeight,
+          exerciseName: log.exerciseName,
+        };
+      }
+    }
+  }
+
+  return records;
+}
+
 // Get last used weights for exercises (for pre-filling accessory exercises)
 export async function getLastUsedWeights(): Promise<Record<string, number>> {
   const allWorkouts = await db.select().from(completedWorkouts);

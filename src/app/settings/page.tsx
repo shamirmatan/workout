@@ -5,22 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { getConfig, updateConfig, setCurrentWeek } from '../actions';
+import { getConfig, setCurrentWeek } from '../actions';
 import { formatDate } from '@/lib/week-calculator';
 
 export default function SettingsPage() {
   const [configState, setConfigState] = useState({
     currentWeek: 1,
     programStartDate: null as string | null,
-    startingSquat: 52.5,
-    startingBench: 37.5,
-    startingDeadlift: 55,
-    startingOhp: 27.5,
-    weeklyIncrement: 2.5,
-    deloadPercentage: 0.6,
   });
   const [newWeek, setNewWeek] = useState(1);
-  const [isSaving, setIsSaving] = useState(false);
   const [isSettingWeek, setIsSettingWeek] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,30 +23,11 @@ export default function SettingsPage() {
       setConfigState({
         currentWeek: data.currentWeek,
         programStartDate: data.programStartDate,
-        startingSquat: data.startingSquat,
-        startingBench: data.startingBench,
-        startingDeadlift: data.startingDeadlift,
-        startingOhp: data.startingOhp,
-        weeklyIncrement: data.weeklyIncrement,
-        deloadPercentage: data.deloadPercentage,
       });
       setNewWeek(data.currentWeek);
       setIsLoading(false);
     });
   }, []);
-
-  const handleSaveWeights = async () => {
-    setIsSaving(true);
-    await updateConfig({
-      startingSquat: configState.startingSquat,
-      startingBench: configState.startingBench,
-      startingDeadlift: configState.startingDeadlift,
-      startingOhp: configState.startingOhp,
-      weeklyIncrement: configState.weeklyIncrement,
-      deloadPercentage: configState.deloadPercentage,
-    });
-    setIsSaving(false);
-  };
 
   const handleSetWeek = async () => {
     setIsSettingWeek(true);
@@ -145,69 +119,6 @@ export default function SettingsPage() {
           </p>
         </div>
       </Card>
-
-      {/* Starting Weights */}
-      <Card className="p-4 mb-4">
-        <h2 className="font-semibold mb-4">Starting Weights (kg)</h2>
-        <div className="space-y-4">
-          {[
-            { key: 'startingSquat', label: 'Squat' },
-            { key: 'startingBench', label: 'Bench Press' },
-            { key: 'startingDeadlift', label: 'Deadlift' },
-            { key: 'startingOhp', label: 'Overhead Press' },
-          ].map(({ key, label }) => (
-            <div key={key}>
-              <Label htmlFor={key}>{label}</Label>
-              <Input
-                id={key}
-                type="number"
-                step={2.5}
-                value={configState[key as keyof typeof configState] as number}
-                onChange={(e) => setConfigState({ ...configState, [key]: parseFloat(e.target.value) || 0 })}
-                className="mt-1"
-              />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Progression Settings */}
-      <Card className="p-4 mb-6">
-        <h2 className="font-semibold mb-4">Progression</h2>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="weeklyIncrement">Weekly Increment (kg)</Label>
-            <Input
-              id="weeklyIncrement"
-              type="number"
-              step={0.5}
-              value={configState.weeklyIncrement}
-              onChange={(e) => setConfigState({ ...configState, weeklyIncrement: parseFloat(e.target.value) || 2.5 })}
-              className="mt-1"
-            />
-          </div>
-          <div>
-            <Label htmlFor="deloadPercentage">Deload Percentage</Label>
-            <Input
-              id="deloadPercentage"
-              type="number"
-              step={0.05}
-              min={0}
-              max={1}
-              value={configState.deloadPercentage}
-              onChange={(e) => setConfigState({ ...configState, deloadPercentage: parseFloat(e.target.value) || 0.6 })}
-              className="mt-1"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              {Math.round(configState.deloadPercentage * 100)}% of working weight
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <Button onClick={handleSaveWeights} disabled={isSaving} className="w-full">
-        {isSaving ? 'Saving...' : 'Save Settings'}
-      </Button>
     </div>
   );
 }
