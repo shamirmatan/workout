@@ -55,3 +55,27 @@ npm run db:studio    # Open Drizzle Studio
 - `config`: Single row storing user settings (starting weights, current week)
 - `workoutTemplates`: Editable workout templates seeded from program data
 - `completedWorkouts`: Logged workouts with exercise details stored as JSON
+
+## UI/UX Notes
+
+### Mobile-First Design
+
+- Uses `viewportFit: cover` with safe-area padding for iOS notch
+- Exercise logger has compact layout for narrow screens
+- Current day workout highlighted with purple border
+- Dark theme with neon purple/green accent colors
+
+### Key Features
+
+- **Personal Records**: Progress page shows max weight achieved per exercise (sorted by weight)
+- **Reset Workout**: Open a completed workout and tap the reset icon (⟲) in header to mark as not done
+- **Weight Memory**: Accessory exercises remember last used weights
+- **Auto Week Advance**: Current week calculated from program start date, advances every Sunday
+
+### Pages
+
+- `/` - Dashboard with current week's workouts
+- `/workouts` - Browse all weeks
+- `/workouts/[week]/[day]` - Log a specific workout
+- `/progress` - Personal records + weight progression chart
+- `/settings` - Set current week (adjusts program start date)
