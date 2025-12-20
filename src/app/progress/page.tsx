@@ -79,8 +79,8 @@ export default function ProgressPage() {
     );
   }
 
-  // Generate weight data for all 26 weeks
-  const chartData = Array.from({ length: 26 }, (_, i) => {
+  // Generate weight data for all 16 weeks
+  const chartData = Array.from({ length: 16 }, (_, i) => {
     const week = i + 1;
     const weights = getAllWeightsForWeek(week, config);
     return {
@@ -185,7 +185,7 @@ export default function ProgressPage() {
           </ResponsiveContainer>
         </div>
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          Projected weights for all 26 weeks
+          Training max weights for all 16 weeks
         </p>
       </Card>
     </div>

@@ -9,7 +9,7 @@ import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { getConfig, getCompletedWorkout, saveWorkout, deleteWorkout, getLastUsedWeights } from '@/app/actions';
 import { getPhaseForWeek, getTemplate } from '@/lib/program-data';
-import { getSetsRepsForWeek, parseSetsReps, getExerciseWeight } from '@/lib/weight-calculator';
+import { getSetsRepsForWeek, parseSetsReps, getExerciseWeight, isExerciseActiveForWeek } from '@/lib/weight-calculator';
 import type { Config, CompletedSet, ExerciseLog, TemplateExercise } from '@/types';
 
 interface PageProps {
@@ -173,25 +173,27 @@ export default function WorkoutLoggerPage({ params }: PageProps) {
 
       {/* Exercise list */}
       <div className="space-y-4">
-        {template.exercises.map((exercise: TemplateExercise) => {
-          const setsReps = getSetsRepsForWeek(exercise, weekNumber);
-          const { sets, reps } = parseSetsReps(setsReps);
-          const calculatedWeight = getExerciseWeight(exercise, weekNumber, config);
-          // For exercises without mainLift, use last used weight as fallback
-          const weight = calculatedWeight ?? lastUsedWeights[exercise.id] ?? null;
+        {template.exercises
+          .filter((exercise: TemplateExercise) => isExerciseActiveForWeek(exercise, weekNumber))
+          .map((exercise: TemplateExercise) => {
+            const setsReps = getSetsRepsForWeek(exercise, weekNumber);
+            const { sets, reps } = parseSetsReps(setsReps);
+            const calculatedWeight = getExerciseWeight(exercise, weekNumber, config);
+            // For exercises without mainLift, use last used weight as fallback
+            const weight = calculatedWeight ?? lastUsedWeights[exercise.id] ?? null;
 
-          return (
-            <ExerciseLogger
-              key={exercise.id}
-              exerciseName={exercise.name}
-              plannedSets={sets}
-              plannedReps={reps}
-              plannedWeight={weight}
-              initialSets={exerciseLogs[exercise.id]}
-              onUpdate={(newSets) => handleExerciseUpdate(exercise.id, newSets)}
-            />
-          );
-        })}
+            return (
+              <ExerciseLogger
+                key={exercise.id}
+                exerciseName={exercise.name}
+                plannedSets={sets}
+                plannedReps={reps}
+                plannedWeight={weight}
+                initialSets={exerciseLogs[exercise.id]}
+                onUpdate={(newSets) => handleExerciseUpdate(exercise.id, newSets)}
+              />
+            );
+          })}
       </div>
 
       {/* Save button - fixed at bottom */}
