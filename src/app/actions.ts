@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { config, completedWorkouts, workoutTemplates } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { calculateCurrentWeek, getProgramStartDateForWeek } from '@/lib/week-calculator';
+import { getProgramStartDateForWeek } from '@/lib/week-calculator';
 import { calculateWeight, LIFT_TO_ADJUSTMENT_KEY } from '@/lib/weight-calculator';
 import type { ExerciseLog, TemplateExercise, MainLift, Config } from '@/types';
 
