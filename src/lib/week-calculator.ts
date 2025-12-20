@@ -21,8 +21,8 @@ export function calculateCurrentWeek(programStartDate: string | null): number {
   // Calculate week number (week 1 starts on day 0)
   const weekNumber = Math.floor(diffDays / 7) + 1;
 
-  // Clamp to valid range (1-26)
-  return Math.max(1, Math.min(26, weekNumber));
+  // Clamp to valid range (1-16)
+  return Math.max(1, Math.min(16, weekNumber));
 }
 
 /**

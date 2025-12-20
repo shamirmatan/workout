@@ -1,15 +1,16 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 // Program configuration (single row for single user)
+// Note: startingX fields are now used as Training Maxes for percentage-based programming
 export const config = sqliteTable('config', {
   id: text('id').primaryKey().default('default'),
   programStartDate: text('program_start_date'),
-  startingSquat: real('starting_squat').notNull().default(52.5),
-  startingBench: real('starting_bench').notNull().default(37.5),
-  startingDeadlift: real('starting_deadlift').notNull().default(55),
-  startingOhp: real('starting_ohp').notNull().default(27.5),
-  weeklyIncrement: real('weekly_increment').notNull().default(2.5),
-  deloadPercentage: real('deload_percentage').notNull().default(0.6),
+  startingSquat: real('starting_squat').notNull().default(80),    // Training max in kg
+  startingBench: real('starting_bench').notNull().default(60),    // Training max in kg
+  startingDeadlift: real('starting_deadlift').notNull().default(75), // Training max in kg
+  startingOhp: real('starting_ohp').notNull().default(40),        // Training max in kg
+  weeklyIncrement: real('weekly_increment').notNull().default(0), // Not used in percentage program
+  deloadPercentage: real('deload_percentage').notNull().default(1), // Not used in percentage program
   currentWeek: integer('current_week').notNull().default(1),
   // Weight adjustments: track difference between prescribed and actual lifted weights
   squatAdjustment: real('squat_adjustment').notNull().default(0),

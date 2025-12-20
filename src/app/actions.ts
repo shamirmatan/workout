@@ -8,7 +8,7 @@ import { calculateCurrentWeek, getProgramStartDateForWeek } from '@/lib/week-cal
 import { calculateWeight, LIFT_TO_ADJUSTMENT_KEY } from '@/lib/weight-calculator';
 import type { ExerciseLog, TemplateExercise, MainLift, Config } from '@/types';
 
-// Get app configuration with calculated current week
+// Get app configuration with calculated current week based on workout completion
 export async function getConfig() {
   const results = await db.select().from(config);
   if (results.length === 0) {
@@ -19,13 +19,43 @@ export async function getConfig() {
 
   const configData = results[0];
 
-  // Calculate current week dynamically based on program start date
-  const calculatedWeek = calculateCurrentWeek(configData.programStartDate);
+  // Calculate current week based on workout completion
+  // Current week = first week with incomplete workouts
+  const calculatedWeek = await calculateCurrentWeekByCompletion();
 
   return {
     ...configData,
     currentWeek: calculatedWeek,
   };
+}
+
+// Calculate current week based on workout completion
+async function calculateCurrentWeekByCompletion(): Promise<number> {
+  const { PHASES } = await import('@/lib/program-data');
+  const allCompleted = await db.select().from(completedWorkouts);
+
+  // Create a set of completed workout IDs for fast lookup
+  const completedIds = new Set(allCompleted.map(w => w.id));
+
+  // Check each week starting from 1
+  for (let week = 1; week <= 16; week++) {
+    // Get the phase for this week to know how many days
+    const phase = PHASES.find(p => week >= p.startWeek && week <= p.endWeek);
+    if (!phase) continue;
+
+    // Check if all workouts for this week are completed
+    const allWorkoutsComplete = phase.labels.every(label =>
+      completedIds.has(`week-${week}-day-${label}`)
+    );
+
+    // If not all workouts are complete, this is the current week
+    if (!allWorkoutsComplete) {
+      return week;
+    }
+  }
+
+  // All weeks complete, return week 16
+  return 16;
 }
 
 // Update configuration

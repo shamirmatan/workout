@@ -5,9 +5,9 @@ export async function POST(request: Request) {
   try {
     const { week } = await request.json();
 
-    if (!week || week < 1 || week > 26) {
+    if (!week || week < 1 || week > 16) {
       return NextResponse.json(
-        { success: false, error: 'Week must be between 1 and 26' },
+        { success: false, error: 'Week must be between 1 and 16' },
         { status: 400 }
       );
     }

@@ -1,12 +1,19 @@
 export type MainLift = 'squat' | 'bench' | 'deadlift' | 'ohp';
 
+export interface WeekVariation {
+  weekRange: [number, number];
+  setsReps: string;
+  intensity?: number; // Percentage of training max (e.g., 0.80 for 80%)
+}
+
 export interface TemplateExercise {
   id: string;
   name: string;
   setsReps: string;
   mainLift?: MainLift;
-  percentageOfMain?: number;
-  weekVariations?: { weekRange: [number, number]; setsReps: string }[];
+  percentageOfMain?: number; // Static percentage (for exercises without week variations)
+  weekVariations?: WeekVariation[];
+  isRPE?: boolean; // True if this exercise uses RPE instead of percentage
 }
 
 export interface WorkoutTemplate {

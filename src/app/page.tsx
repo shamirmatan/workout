@@ -2,7 +2,7 @@ import { getConfig, getCompletedWorkouts } from './actions';
 import { getPhaseForWeek, getWorkoutsForWeek, getTemplate } from '@/lib/program-data';
 import { PhaseBadge } from '@/components/phase-badge';
 import { WorkoutCard } from '@/components/workout-card';
-import { getAllWeightsForWeek } from '@/lib/weight-calculator';
+import { getAllWeightsForWeek, isExerciseActiveForWeek } from '@/lib/weight-calculator';
 import type { Config } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
     <div className="p-4 pb-20 max-w-md mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Week {currentWeek} of 26</h1>
+        <h1 className="text-2xl font-bold mb-2">Week {currentWeek} of 16</h1>
         <PhaseBadge
           phaseNumber={phase.number}
           phaseName={phase.name}
@@ -67,13 +67,17 @@ export default async function DashboardPage() {
             l => !completedIds.has(`week-${currentWeek}-day-${l}`)
           );
 
+          const activeExerciseCount = template?.exercises.filter(
+            ex => isExerciseActiveForWeek(ex, currentWeek)
+          ).length || 0;
+
           return (
             <WorkoutCard
               key={label}
               weekNumber={currentWeek}
               dayLabel={label}
               workoutName={template?.name || ''}
-              exerciseCount={template?.exercises.length || 0}
+              exerciseCount={activeExerciseCount}
               isCompleted={isCompleted}
               isCurrentDay={isCurrentDay}
             />

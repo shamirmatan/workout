@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Workout Tracker",
-  description: "26-week powerlifting program tracker",
+  description: "16-week powerlifting program tracker",
 };
 
 export const viewport: Viewport = {

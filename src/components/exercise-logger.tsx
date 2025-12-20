@@ -115,7 +115,7 @@ export function ExerciseLogger({
               <span className="text-muted-foreground text-sm">×</span>
 
               {/* Reps controls */}
-              <div className="flex items-center w-24 shrink-0">
+              <div className="flex items-center w-28 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"

@@ -21,7 +21,7 @@ export function WorkoutCard({
 }: Props) {
   return (
     <Link href={`/workouts/${weekNumber}/${dayLabel}`}>
-      <Card className={`p-4 transition-all hover:shadow-md ${
+      <Card className={`p-4 transition-all hover:shadow-md active:scale-[0.98] active:opacity-80 active:bg-muted/50 ${
         isCurrentDay ? 'border-2 border-primary' : ''
       } ${isCompleted ? 'bg-accent/10' : ''}`}>
         <div className="flex items-center justify-between">

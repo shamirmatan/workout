@@ -27,7 +27,7 @@ export default async function WorkoutsPage() {
       {/* Current week indicator */}
       <Card className="p-4 mb-6 bg-primary/10">
         <p className="text-sm font-medium">
-          Currently on Week {config.currentWeek} of 26
+          Currently on Week {config.currentWeek} of 16
         </p>
       </Card>
 

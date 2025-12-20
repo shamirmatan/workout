@@ -75,7 +75,7 @@ export default function SettingsPage() {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Current Week</span>
-            <span className="text-xl font-bold">{configState.currentWeek} of 26</span>
+            <span className="text-xl font-bold">{configState.currentWeek} of 16</span>
           </div>
           {configState.programStartDate && (
             <div className="flex justify-between items-center text-sm">
@@ -101,7 +101,7 @@ export default function SettingsPage() {
               id="setWeek"
               type="number"
               min={1}
-              max={26}
+              max={16}
               value={newWeek}
               onChange={(e) => setNewWeek(parseInt(e.target.value) || 1)}
               className="flex-1"
