@@ -15,13 +15,18 @@ export default async function DashboardPage() {
   const config: Config = {
     id: configData.id ?? 'default',
     programStartDate: configData.programStartDate,
+    currentWeek: configData.currentWeek,
     startingSquat: configData.startingSquat,
     startingBench: configData.startingBench,
     startingDeadlift: configData.startingDeadlift,
     startingOhp: configData.startingOhp,
+    startingRow: configData.startingRow ?? 45,
+    startingLunges: configData.startingLunges ?? 40,
+    startingGoodmornings: configData.startingGoodmornings ?? 30,
+    startingRdl: configData.startingRdl ?? 60,
     weeklyIncrement: configData.weeklyIncrement,
+    goodmorningsIncrement: configData.goodmorningsIncrement ?? 1.25,
     deloadPercentage: configData.deloadPercentage,
-    currentWeek: configData.currentWeek,
     squatAdjustment: configData.squatAdjustment ?? 0,
     benchAdjustment: configData.benchAdjustment ?? 0,
     deadliftAdjustment: configData.deadliftAdjustment ?? 0,
@@ -39,7 +44,7 @@ export default async function DashboardPage() {
     <div className="p-4 pb-20 max-w-md mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Week {currentWeek} of 16</h1>
+        <h1 className="text-2xl font-bold mb-2">Week {currentWeek}</h1>
         <PhaseBadge
           phaseNumber={phase.number}
           phaseName={phase.name}

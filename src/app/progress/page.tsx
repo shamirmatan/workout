@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { getConfig, getCompletedWorkouts, getPersonalRecords } from '../actions';
 import { getAllWeightsForWeek } from '@/lib/weight-calculator';
-import { PHASES } from '@/lib/program-data';
 import type { Config, MainLift } from '@/types';
 import { Trophy } from 'lucide-react';
 import {
@@ -18,11 +17,18 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
+// Only show main lifts on the chart (not accessories)
+const CHART_LIFTS: MainLift[] = ['squat', 'bench', 'deadlift', 'ohp'];
+
 const LIFT_COLORS: Record<MainLift, string> = {
-  squat: '#a855f7',    // neon purple
-  bench: '#f472b6',    // neon pink
-  deadlift: '#22d3ee', // neon cyan
-  ohp: '#4ade80',      // neon green
+  squat: '#a855f7',       // neon purple
+  bench: '#f472b6',       // neon pink
+  deadlift: '#22d3ee',    // neon cyan
+  ohp: '#4ade80',         // neon green
+  row: '#fbbf24',         // yellow
+  lunges: '#f97316',      // orange
+  goodmornings: '#ec4899',// magenta
+  rdl: '#06b6d4',         // teal
 };
 
 const LIFT_LABELS: Record<MainLift, string> = {
@@ -30,6 +36,10 @@ const LIFT_LABELS: Record<MainLift, string> = {
   bench: 'Bench',
   deadlift: 'Deadlift',
   ohp: 'OHP',
+  row: 'Row',
+  lunges: 'Lunges',
+  goodmornings: 'Good Mornings',
+  rdl: 'Romanian DL',
 };
 
 export default function ProgressPage() {
@@ -49,13 +59,18 @@ export default function ProgressPage() {
       const configTyped: Config = {
         id: configData.id ?? 'default',
         programStartDate: configData.programStartDate,
+        currentWeek: configData.currentWeek,
         startingSquat: configData.startingSquat,
         startingBench: configData.startingBench,
         startingDeadlift: configData.startingDeadlift,
         startingOhp: configData.startingOhp,
+        startingRow: configData.startingRow ?? 45,
+        startingLunges: configData.startingLunges ?? 40,
+        startingGoodmornings: configData.startingGoodmornings ?? 30,
+        startingRdl: configData.startingRdl ?? 60,
         weeklyIncrement: configData.weeklyIncrement,
+        goodmorningsIncrement: configData.goodmorningsIncrement ?? 1.25,
         deloadPercentage: configData.deloadPercentage,
-        currentWeek: configData.currentWeek,
         squatAdjustment: configData.squatAdjustment ?? 0,
         benchAdjustment: configData.benchAdjustment ?? 0,
         deadliftAdjustment: configData.deadliftAdjustment ?? 0,
@@ -79,23 +94,22 @@ export default function ProgressPage() {
     );
   }
 
-  // Generate weight data for all 16 weeks
-  const chartData = Array.from({ length: 16 }, (_, i) => {
-    const week = i + 1;
+  // Generate weight data for 12 weeks from current week
+  const startWeek = Math.max(1, config.currentWeek - 2);
+  const chartData = Array.from({ length: 12 }, (_, i) => {
+    const week = startWeek + i;
     const weights = getAllWeightsForWeek(week, config);
     return {
       week,
-      ...weights,
+      squat: weights.squat,
+      bench: weights.bench,
+      deadlift: weights.deadlift,
+      ohp: weights.ohp,
     };
   });
 
-  // Calculate total workouts
-  const totalWorkouts = PHASES.reduce((sum, phase) => {
-    const weeksInPhase = phase.endWeek - phase.startWeek + 1;
-    return sum + (weeksInPhase * phase.daysPerWeek);
-  }, 0);
-
-  const progressPercentage = Math.round((completedCount / totalWorkouts) * 100);
+  // Total workouts: 3 per week, open-ended
+  const weeksCompleted = Math.floor(completedCount / 3);
 
   return (
     <div className="p-4 pb-20 max-w-md mx-auto">
@@ -107,17 +121,16 @@ export default function ProgressPage() {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Workouts Completed</span>
-            <span className="font-medium">{completedCount} / {totalWorkouts}</span>
+            <span className="font-medium">{completedCount}</span>
           </div>
-          <div className="w-full bg-muted rounded-full h-3">
-            <div
-              className="bg-primary h-3 rounded-full transition-all"
-              style={{ width: `${progressPercentage}%` }}
-            />
+          <div className="flex justify-between text-sm">
+            <span>Weeks Completed</span>
+            <span className="font-medium">{weeksCompleted}</span>
           </div>
-          <p className="text-xs text-muted-foreground text-right">
-            {progressPercentage}% complete
-          </p>
+          <div className="flex justify-between text-sm">
+            <span>Current Week</span>
+            <span className="font-medium">{config.currentWeek}</span>
+          </div>
         </div>
       </Card>
 
@@ -170,7 +183,7 @@ export default function ProgressPage() {
                 }}
               />
               <Legend />
-              {(Object.keys(LIFT_COLORS) as MainLift[]).map(lift => (
+              {CHART_LIFTS.map(lift => (
                 <Line
                   key={lift}
                   type="monotone"
@@ -185,7 +198,7 @@ export default function ProgressPage() {
           </ResponsiveContainer>
         </div>
         <p className="text-xs text-muted-foreground mt-2 text-center">
-          Training max weights for all 16 weeks
+          Main lift weights (weeks {startWeek}-{startWeek + 11})
         </p>
       </Card>
     </div>

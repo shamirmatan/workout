@@ -1,39 +1,66 @@
 import type { MainLift, Config, TemplateExercise, WeekVariation } from '@/types';
 
+// Map lift type to config field for starting weight
 const LIFT_TO_CONFIG_KEY: Record<MainLift, keyof Config> = {
   squat: 'startingSquat',
   bench: 'startingBench',
   deadlift: 'startingDeadlift',
   ohp: 'startingOhp',
+  row: 'startingRow',
+  lunges: 'startingLunges',
+  goodmornings: 'startingGoodmornings',
+  rdl: 'startingRdl',
 };
 
+// Legacy adjustment keys (kept for compatibility, not used in linear program)
 export const LIFT_TO_ADJUSTMENT_KEY: Record<MainLift, keyof Config> = {
   squat: 'squatAdjustment',
   bench: 'benchAdjustment',
   deadlift: 'deadliftAdjustment',
   ohp: 'ohpAdjustment',
+  row: 'squatAdjustment', // Not used
+  lunges: 'squatAdjustment', // Not used
+  goodmornings: 'squatAdjustment', // Not used
+  rdl: 'deadliftAdjustment', // Not used
 };
 
-// Get training max for a lift (config stores training maxes in startingX fields)
-export function getTrainingMax(mainLift: MainLift, config: Config): number {
+// Get starting weight for a lift from config
+export function getStartingWeight(mainLift: MainLift, config: Config): number {
   return config[LIFT_TO_CONFIG_KEY[mainLift]] as number;
 }
 
-// Calculate weight based on training max and intensity percentage
+// Get weekly increment for a lift
+export function getWeeklyIncrement(mainLift: MainLift, config: Config): number {
+  if (mainLift === 'goodmornings') {
+    return config.goodmorningsIncrement || 1.25;
+  }
+  return config.weeklyIncrement || 2.5;
+}
+
+// Calculate weight for a given week using linear progression
+// Weight = startingWeight + (week - 1) * increment
 export function calculateWeight(
   mainLift: MainLift,
   weekNumber: number,
   config: Config,
-  intensity: number = 1
+  percentageModifier: number = 1
 ): number {
-  const trainingMax = getTrainingMax(mainLift, config);
-  const adjustment = (config[LIFT_TO_ADJUSTMENT_KEY[mainLift]] as number) || 0;
+  const startingWeight = getStartingWeight(mainLift, config);
+  const increment = getWeeklyIncrement(mainLift, config);
 
-  // Weight = training max * intensity + any adjustment
-  const weight = trainingMax * intensity + adjustment;
+  // Linear progression: add increment for each week after week 1
+  const baseWeight = startingWeight + (weekNumber - 1) * increment;
+
+  // Apply percentage modifier (for variations like pause squat at 96%)
+  const weight = baseWeight * percentageModifier;
 
   // Round to nearest 2.5kg
   return Math.round(weight / 2.5) * 2.5;
+}
+
+// Legacy function for compatibility - returns starting weight
+export function getTrainingMax(mainLift: MainLift, config: Config): number {
+  return getStartingWeight(mainLift, config);
 }
 
 // Get the week variation for a specific week
@@ -57,7 +84,7 @@ export function getSetsRepsForWeek(
   return variation?.setsReps || exercise.setsReps;
 }
 
-// Get intensity for an exercise based on week
+// Get intensity/percentage for an exercise based on week
 export function getIntensityForWeek(
   exercise: Pick<TemplateExercise, 'percentageOfMain' | 'weekVariations'>,
   weekNumber: number
@@ -68,17 +95,15 @@ export function getIntensityForWeek(
 }
 
 // Check if an exercise is active for a given week
-// An exercise is active if it has no weekVariations OR has a matching weekVariation
 export function isExerciseActiveForWeek(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   exercise: Pick<TemplateExercise, 'weekVariations'>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   weekNumber: number
 ): boolean {
-  if (!exercise.weekVariations || exercise.weekVariations.length === 0) {
-    return true; // No week restrictions, always active
-  }
-  return exercise.weekVariations.some(
-    v => weekNumber >= v.weekRange[0] && weekNumber <= v.weekRange[1]
-  );
+  // In the simplified program, all exercises are always active
+  // No week restrictions
+  return true;
 }
 
 // Parse sets x reps string (e.g., "5x5" -> { sets: 5, reps: "5" })
@@ -105,22 +130,25 @@ export function getExerciseWeight(
     return null;
   }
 
-  const intensity = getIntensityForWeek(exercise, weekNumber);
-  if (intensity === undefined) {
-    return null;
-  }
+  // Get percentage modifier (defaults to 1 for main lifts)
+  const percentage = exercise.percentageOfMain ?? 1;
 
-  return calculateWeight(exercise.mainLift, weekNumber, config, intensity);
+  return calculateWeight(exercise.mainLift, weekNumber, config, percentage);
 }
 
+// Get all starting weights (for display purposes)
 export function getAllWeightsForWeek(
   weekNumber: number,
   config: Config
 ): Record<MainLift, number> {
   return {
-    squat: getTrainingMax('squat', config),
-    bench: getTrainingMax('bench', config),
-    deadlift: getTrainingMax('deadlift', config),
-    ohp: getTrainingMax('ohp', config),
+    squat: calculateWeight('squat', weekNumber, config),
+    bench: calculateWeight('bench', weekNumber, config),
+    deadlift: calculateWeight('deadlift', weekNumber, config),
+    ohp: calculateWeight('ohp', weekNumber, config),
+    row: calculateWeight('row', weekNumber, config),
+    lunges: calculateWeight('lunges', weekNumber, config),
+    goodmornings: calculateWeight('goodmornings', weekNumber, config),
+    rdl: calculateWeight('rdl', weekNumber, config),
   };
 }

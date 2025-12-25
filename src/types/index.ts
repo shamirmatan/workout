@@ -1,4 +1,4 @@
-export type MainLift = 'squat' | 'bench' | 'deadlift' | 'ohp';
+export type MainLift = 'squat' | 'bench' | 'deadlift' | 'ohp' | 'row' | 'lunges' | 'goodmornings' | 'rdl';
 
 export interface WeekVariation {
   weekRange: [number, number];
@@ -11,7 +11,7 @@ export interface TemplateExercise {
   name: string;
   setsReps: string;
   mainLift?: MainLift;
-  percentageOfMain?: number; // Static percentage (for exercises without week variations)
+  percentageOfMain?: number; // For variations (e.g., pause squat = 96% of squat)
   weekVariations?: WeekVariation[];
   isRPE?: boolean; // True if this exercise uses RPE instead of percentage
 }
@@ -48,14 +48,21 @@ export interface ExerciseLog {
 export interface Config {
   id: string;
   programStartDate: string | null;
+  currentWeek: number;
+  // Starting weights for each lift
   startingSquat: number;
   startingBench: number;
   startingDeadlift: number;
   startingOhp: number;
-  weeklyIncrement: number;
+  startingRow: number;
+  startingLunges: number;
+  startingGoodmornings: number;
+  startingRdl: number;
+  // Weekly increments
+  weeklyIncrement: number; // Default 2.5 kg
+  goodmorningsIncrement: number; // Slower at 1.25 kg
+  // Legacy fields (not used but kept for compatibility)
   deloadPercentage: number;
-  currentWeek: number;
-  // Weight adjustments from actual lifts
   squatAdjustment: number;
   benchAdjustment: number;
   deadliftAdjustment: number;

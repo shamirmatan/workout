@@ -5,8 +5,7 @@ import { config, completedWorkouts, workoutTemplates } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { getProgramStartDateForWeek } from '@/lib/week-calculator';
-import { calculateWeight, LIFT_TO_ADJUSTMENT_KEY } from '@/lib/weight-calculator';
-import type { ExerciseLog, TemplateExercise, MainLift, Config } from '@/types';
+import type { ExerciseLog } from '@/types';
 
 // Get app configuration with calculated current week based on workout completion
 export async function getConfig() {
@@ -31,20 +30,18 @@ export async function getConfig() {
 
 // Calculate current week based on workout completion
 async function calculateCurrentWeekByCompletion(): Promise<number> {
-  const { PHASES } = await import('@/lib/program-data');
   const allCompleted = await db.select().from(completedWorkouts);
 
   // Create a set of completed workout IDs for fast lookup
   const completedIds = new Set(allCompleted.map(w => w.id));
 
-  // Check each week starting from 1
-  for (let week = 1; week <= 16; week++) {
-    // Get the phase for this week to know how many days
-    const phase = PHASES.find(p => week >= p.startWeek && week <= p.endWeek);
-    if (!phase) continue;
+  // 3 days per week: ['1', '2', '3']
+  const dayLabels = ['1', '2', '3'];
 
+  // Check each week starting from 1 (up to 52 weeks for a year)
+  for (let week = 1; week <= 52; week++) {
     // Check if all workouts for this week are completed
-    const allWorkoutsComplete = phase.labels.every(label =>
+    const allWorkoutsComplete = dayLabels.every(label =>
       completedIds.has(`week-${week}-day-${label}`)
     );
 
@@ -54,8 +51,8 @@ async function calculateCurrentWeekByCompletion(): Promise<number> {
     }
   }
 
-  // All weeks complete, return week 16
-  return 16;
+  // All 52 weeks complete, return week 52
+  return 52;
 }
 
 // Update configuration
@@ -110,99 +107,9 @@ export async function saveWorkout(data: {
     },
   });
 
-  // Update weight adjustments based on actual lifted weights
-  await updateWeightAdjustments(data.templateId, data.weekNumber, data.exerciseLogs);
-
   revalidatePath('/');
   revalidatePath('/workouts');
   revalidatePath(`/workouts/${data.weekNumber}/${data.dayLabel}`);
-}
-
-// Update weight adjustments based on what was actually lifted vs prescribed
-async function updateWeightAdjustments(
-  templateId: string,
-  weekNumber: number,
-  exerciseLogs: ExerciseLog[]
-) {
-  // Get the template to find mainLift for each exercise
-  const templateResults = await db.select().from(workoutTemplates).where(eq(workoutTemplates.id, templateId));
-  if (templateResults.length === 0) return;
-
-  const template = templateResults[0];
-  const exercises: TemplateExercise[] = JSON.parse(template.exercisesJson);
-
-  // Get current config
-  const configData = await getConfig();
-
-  // Build config object with proper types
-  const configTyped: Config = {
-    id: configData.id ?? 'default',
-    programStartDate: configData.programStartDate,
-    startingSquat: configData.startingSquat,
-    startingBench: configData.startingBench,
-    startingDeadlift: configData.startingDeadlift,
-    startingOhp: configData.startingOhp,
-    weeklyIncrement: configData.weeklyIncrement,
-    deloadPercentage: configData.deloadPercentage,
-    currentWeek: configData.currentWeek,
-    squatAdjustment: configData.squatAdjustment ?? 0,
-    benchAdjustment: configData.benchAdjustment ?? 0,
-    deadliftAdjustment: configData.deadliftAdjustment ?? 0,
-    ohpAdjustment: configData.ohpAdjustment ?? 0,
-  };
-
-  // Track adjustments to update
-  const adjustmentUpdates: Partial<Record<MainLift, number>> = {};
-
-  for (const exercise of exercises) {
-    // Only process exercises with a mainLift
-    if (!exercise.mainLift) {
-      continue;
-    }
-
-    // Find the corresponding exercise log
-    const log = exerciseLogs.find(l => l.exerciseId === exercise.id);
-    if (!log || log.sets.length === 0) continue;
-
-    // Find max weight lifted across all completed sets
-    const completedSets = log.sets.filter(s => s.completed);
-    if (completedSets.length === 0) continue;
-
-    const maxLiftedWeight = Math.max(...completedSets.map(s => s.weight));
-
-    // Get the percentage modifier (defaults to 1 for main lifts)
-    const percentage = exercise.percentageOfMain ?? 1;
-
-    // Calculate what was prescribed at THIS percentage (includes current adjustment)
-    const prescribedWeight = calculateWeight(
-      exercise.mainLift,
-      weekNumber,
-      configTyped,
-      percentage
-    );
-
-    // If they lifted different weight, calculate new adjustment
-    // Scale the difference back to 100% equivalent
-    const differenceAtPercentage = maxLiftedWeight - prescribedWeight;
-    const differenceAt100 = differenceAtPercentage / percentage;
-
-    if (Math.abs(differenceAt100) >= 2.5) { // Only adjust if 100% difference is at least 2.5kg
-      const currentAdjustment = configTyped[LIFT_TO_ADJUSTMENT_KEY[exercise.mainLift]] as number;
-      // Round to nearest 2.5kg for cleaner numbers
-      const newAdjustment = Math.round((currentAdjustment + differenceAt100) / 2.5) * 2.5;
-      adjustmentUpdates[exercise.mainLift] = newAdjustment;
-    }
-  }
-
-  // Update config with new adjustments
-  if (Object.keys(adjustmentUpdates).length > 0) {
-    const updates: Record<string, number> = {};
-    for (const [lift, adjustment] of Object.entries(adjustmentUpdates)) {
-      const key = LIFT_TO_ADJUSTMENT_KEY[lift as MainLift];
-      updates[key] = adjustment;
-    }
-    await db.update(config).set(updates).where(eq(config.id, 'default'));
-  }
 }
 
 // Get all completed workouts
