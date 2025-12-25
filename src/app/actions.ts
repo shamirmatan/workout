@@ -5,7 +5,8 @@ import { config, completedWorkouts, workoutTemplates } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { getProgramStartDateForWeek } from '@/lib/week-calculator';
-import type { ExerciseLog } from '@/types';
+import { calculateWeight, getWeeklyIncrement } from '@/lib/weight-calculator';
+import type { ExerciseLog, MainLift, TemplateExercise, Config } from '@/types';
 
 // Get app configuration with calculated current week based on workout completion
 export async function getConfig() {
@@ -77,6 +78,18 @@ export async function setCurrentWeek(weekNumber: number) {
   revalidatePath('/progress');
 }
 
+// Map mainLift to config field for starting weight
+const LIFT_TO_CONFIG_FIELD: Record<MainLift, string> = {
+  squat: 'startingSquat',
+  bench: 'startingBench',
+  deadlift: 'startingDeadlift',
+  ohp: 'startingOhp',
+  row: 'startingRow',
+  lunges: 'startingLunges',
+  goodmornings: 'startingGoodmornings',
+  rdl: 'startingRdl',
+};
+
 // Save completed workout
 export async function saveWorkout(data: {
   weekNumber: number;
@@ -107,9 +120,96 @@ export async function saveWorkout(data: {
     },
   });
 
+  // Update starting weights based on what was actually lifted
+  await updateStartingWeights(data.templateId, data.weekNumber, data.exerciseLogs);
+
   revalidatePath('/');
   revalidatePath('/workouts');
   revalidatePath(`/workouts/${data.weekNumber}/${data.dayLabel}`);
+}
+
+// Update starting weights when user lifts different from prescribed
+// This ensures future workouts reflect actual progress
+async function updateStartingWeights(
+  templateId: string,
+  weekNumber: number,
+  exerciseLogs: ExerciseLog[]
+) {
+  // Get the template to find mainLift for each exercise
+  const templateResults = await db.select().from(workoutTemplates).where(eq(workoutTemplates.id, templateId));
+  if (templateResults.length === 0) return;
+
+  const template = templateResults[0];
+  const exercises: TemplateExercise[] = JSON.parse(template.exercisesJson);
+
+  // Get current config
+  const configData = await getConfig();
+
+  // Build config object
+  const configTyped: Config = {
+    id: configData.id ?? 'default',
+    programStartDate: configData.programStartDate,
+    currentWeek: configData.currentWeek,
+    startingSquat: configData.startingSquat,
+    startingBench: configData.startingBench,
+    startingDeadlift: configData.startingDeadlift,
+    startingOhp: configData.startingOhp,
+    startingRow: configData.startingRow ?? 45,
+    startingLunges: configData.startingLunges ?? 40,
+    startingGoodmornings: configData.startingGoodmornings ?? 30,
+    startingRdl: configData.startingRdl ?? 60,
+    weeklyIncrement: configData.weeklyIncrement,
+    goodmorningsIncrement: configData.goodmorningsIncrement ?? 1.25,
+    deloadPercentage: configData.deloadPercentage,
+    squatAdjustment: configData.squatAdjustment ?? 0,
+    benchAdjustment: configData.benchAdjustment ?? 0,
+    deadliftAdjustment: configData.deadliftAdjustment ?? 0,
+    ohpAdjustment: configData.ohpAdjustment ?? 0,
+  };
+
+  // Track starting weight updates
+  const updates: Record<string, number> = {};
+
+  for (const exercise of exercises) {
+    // Only process exercises with a mainLift (not RPE exercises like plank)
+    if (!exercise.mainLift || exercise.isRPE) continue;
+
+    // Find the corresponding exercise log
+    const log = exerciseLogs.find(l => l.exerciseId === exercise.id);
+    if (!log || log.sets.length === 0) continue;
+
+    // Find max weight lifted across all completed sets
+    const completedSets = log.sets.filter(s => s.completed && s.weight > 0);
+    if (completedSets.length === 0) continue;
+
+    const liftedWeight = Math.max(...completedSets.map(s => s.weight));
+
+    // Get the percentage modifier for variations (e.g., pause squat at 96%)
+    const percentage = exercise.percentageOfMain ?? 1;
+
+    // Calculate what was prescribed
+    const prescribedWeight = calculateWeight(exercise.mainLift, weekNumber, configTyped, percentage);
+
+    // If lifted weight differs by at least 2.5kg, update starting weight
+    if (Math.abs(liftedWeight - prescribedWeight) >= 2.5) {
+      // Back-calculate new starting weight
+      // liftedWeight = (startingWeight + (week-1) * increment) * percentage
+      // startingWeight = (liftedWeight / percentage) - (week-1) * increment
+      const increment = getWeeklyIncrement(exercise.mainLift, configTyped);
+      const newStartingWeight = (liftedWeight / percentage) - (weekNumber - 1) * increment;
+
+      // Round to nearest 2.5kg
+      const roundedStartingWeight = Math.round(newStartingWeight / 2.5) * 2.5;
+
+      const configField = LIFT_TO_CONFIG_FIELD[exercise.mainLift];
+      updates[configField] = roundedStartingWeight;
+    }
+  }
+
+  // Update config with new starting weights
+  if (Object.keys(updates).length > 0) {
+    await db.update(config).set(updates).where(eq(config.id, 'default'));
+  }
 }
 
 // Get all completed workouts
