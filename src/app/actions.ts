@@ -36,8 +36,8 @@ async function calculateCurrentWeekByCompletion(): Promise<number> {
   // Create a set of completed workout IDs for fast lookup
   const completedIds = new Set(allCompleted.map(w => w.id));
 
-  // 3 days per week: ['1', '2', '3']
-  const dayLabels = ['1', '2', '3'];
+  // 2 days per week: ['1', '2']
+  const dayLabels = ['1', '2'];
 
   // Check each week starting from 1 (up to 52 weeks for a year)
   for (let week = 1; week <= 52; week++) {
@@ -307,11 +307,16 @@ export async function getTemplates() {
 // Seed database with initial data
 export async function seedDatabase() {
   const { ALL_TEMPLATES } = await import('@/lib/program-data');
+  const { notInArray } = await import('drizzle-orm');
 
   // Insert default config if none exists
   await db.insert(config).values({ id: 'default' }).onConflictDoNothing();
 
-  // Insert all templates
+  // Remove any templates no longer in the program
+  const activeIds = ALL_TEMPLATES.map(t => t.id);
+  await db.delete(workoutTemplates).where(notInArray(workoutTemplates.id, activeIds));
+
+  // Upsert current templates
   for (const template of ALL_TEMPLATES) {
     await db.insert(workoutTemplates).values({
       id: template.id,

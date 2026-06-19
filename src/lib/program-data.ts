@@ -1,9 +1,9 @@
 import type { Phase, WorkoutTemplate } from '@/types';
 
-// Open-ended program: 3 days per week, linear progression
+// Open-ended program: 2 days per week, linear progression
 // Using a large endWeek (999) to make it effectively unlimited
 export const PHASES: readonly Phase[] = [
-  { number: 1, name: 'Linear Progression', startWeek: 1, endWeek: 999, daysPerWeek: 3, labels: ['1', '2', '3'] },
+  { number: 1, name: 'Linear Progression', startWeek: 1, endWeek: 999, daysPerWeek: 2, labels: ['1', '2'] },
 ] as const;
 
 // No deload weeks - user decides when to deload
@@ -30,15 +30,9 @@ const DAY1_TEMPLATE: WorkoutTemplate = {
       mainLift: 'bench',
     },
     {
-      id: 'pendlay-row',
-      name: 'Pendlay Row',
-      setsReps: '3x8',
-      mainLift: 'row',
-    },
-    {
       id: 'plank-day1',
       name: 'Plank (seconds)',
-      setsReps: '3x60',
+      setsReps: '1x180',
       isRPE: true,
     },
   ],
@@ -64,57 +58,16 @@ const DAY2_TEMPLATE: WorkoutTemplate = {
       mainLift: 'ohp',
     },
     {
-      id: 'back-lunges',
-      name: 'Back Lunges (per leg)',
-      setsReps: '3x8',
-      mainLift: 'lunges',
-    },
-    {
-      id: 'good-mornings',
-      name: 'Good Mornings',
-      setsReps: '3x8',
-      mainLift: 'goodmornings',
-    },
-  ],
-};
-
-// Day 3: Variations
-const DAY3_TEMPLATE: WorkoutTemplate = {
-  id: 'day-3',
-  phaseNumber: 1,
-  dayLabel: '3',
-  name: 'VARIATIONS',
-  exercises: [
-    {
-      id: 'pause-squat',
-      name: 'Pause Squat',
-      setsReps: '3x6',
-      mainLift: 'squat',
-      percentageOfMain: 0.96, // Slightly lighter for pause work
-    },
-    {
-      id: 'pause-bench',
-      name: 'Pause Bench',
-      setsReps: '3x6',
-      mainLift: 'bench',
-    },
-    {
-      id: 'romanian-deadlift',
-      name: 'Romanian Deadlift',
-      setsReps: '3x8',
-      mainLift: 'rdl',
-    },
-    {
-      id: 'plank-day3',
+      id: 'plank-day2',
       name: 'Plank (seconds)',
-      setsReps: '3x60',
+      setsReps: '1x180',
       isRPE: true,
     },
   ],
 };
 
 // All templates - used for seeding
-export const ALL_TEMPLATES = [DAY1_TEMPLATE, DAY2_TEMPLATE, DAY3_TEMPLATE];
+export const ALL_TEMPLATES = [DAY1_TEMPLATE, DAY2_TEMPLATE];
 
 // Get phase for a given week (always returns the single phase)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -125,7 +78,7 @@ export function getPhaseForWeek(week: number): Phase {
 // Get workout labels for a given week
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getWorkoutsForWeek(week: number): string[] {
-  return ['1', '2', '3'];
+  return ['1', '2'];
 }
 
 // Check if week is a deload (not used in this program)
